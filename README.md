@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Video Feed
+
+A TikTok-style vertical scroll video feed built with **Next.js 16 (App Router)** and **TypeScript**.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 — App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **React**: v19
+
+## Features
+
+- 📱 Full-screen vertical scroll with CSS Scroll Snap
+- ▶️ Click-to-Play / Pause with animated overlay
+- 🤖 Auto-play / auto-pause on scroll via Intersection Observer
+- ❤️ Like button with live counter and red toggle state
+- 🧭 Responsive navigation — left sidebar on desktop, bottom bar on mobile
+- 🎨 Glassmorphism UI with gradient overlays
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How Play/Pause on Scroll Works
 
-## Learn More
+### Manual Click (Click-to-Play/Pause)
 
-To learn more about Next.js, take a look at the following resources:
+Each `VideoCard` holds a `ref` pointing to the `<video>` DOM element.
+When the user clicks the video:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```ts
+const handleTogglePlay = () => {
+  if (videoRef.current.paused) {
+    videoRef.current.play();
+  } else {
+    videoRef.current.pause();
+  }
+};
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A brief pause/play icon flashes on screen as visual feedback.
 
-## Deploy on Vercel
+### Auto-play on Scroll (Intersection Observer)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The core logic lives in `hooks/useVideoAutoPlay.ts`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+┌────────────────────────────────────────────────┐
+│           IntersectionObserver                 │
+│                                                │
+│  threshold: 0.6  (≥ 60% of card is visible)  │
+│                                                │
+│  isIntersecting = true  →  video.play()       │
+│  isIntersecting = false →  video.pause()      │
+│                             video.currentTime = 0 │
+└────────────────────────────────────────────────┘
+```
+
+**How it works step by step:**
+
+1. `useVideoAutoPlay(videoRef)` is called inside each `VideoCard`.
+2. On mount, an `IntersectionObserver` is attached to the `<video>` element.
+3. The observer fires whenever the intersection ratio crosses `0.6` (60%).
+4. **Entering viewport**: `video.play()` is called. The browser auto-plays since the video is `muted`.
+5. **Leaving viewport**: `video.pause()` is called and `currentTime` is reset to `0` so the next view starts fresh.
+6. On unmount (component removed), the observer is disconnected to prevent memory leaks.
+
+The `setUserPaused` flag prevents the observer from re-playing a video the user explicitly paused with a click, giving them manual override control.
+
+### Why `muted` is required for autoplay
+
+Browsers block autoplay on videos with sound to prevent jarring user experiences. Adding `muted` to the `<video>` element allows the Autoplay Policy to be satisfied in all major browsers (Chrome, Firefox, Safari).
+
+## Project Structure
+
+```
+video-feed/
+├── app/
+│   ├── layout.tsx        # Root layout — includes Navigation
+│   ├── globals.css       # Global styles, scrollbar-hide, animations
+│   └── page.tsx          # Entry page — renders VideoFeed
+├── components/
+│   ├── VideoFeed.tsx     # Scroll-snap container, maps over video data
+│   ├── VideoCard.tsx     # Individual video card with play/pause logic
+│   ├── InteractionBar.tsx# Like / Comment / Share buttons
+│   └── Navigation.tsx    # Sidebar (desktop) / Bottom bar (mobile)
+├── hooks/
+│   └── useVideoAutoPlay.ts # Intersection Observer auto-play hook
+├── data/
+│   └── video.ts          # Mock video data array
+└── types/
+    └── video.ts          # Video TypeScript interface
+```
