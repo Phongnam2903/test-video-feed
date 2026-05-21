@@ -11,12 +11,12 @@ A TikTok-style vertical scroll video feed built with **Next.js 16 (App Router)**
 
 ## Features
 
-- 📱 Full-screen vertical scroll with CSS Scroll Snap
-- ▶️ Click-to-Play / Pause with animated overlay
-- 🤖 Auto-play / auto-pause on scroll via Intersection Observer
-- ❤️ Like button with live counter and red toggle state
-- 🧭 Responsive navigation — left sidebar on desktop, bottom bar on mobile
-- 🎨 Glassmorphism UI with gradient overlays
+-  Full-screen vertical scroll with CSS Scroll Snap
+-  Click-to-Play / Pause with animated overlay
+-  Auto-play / auto-pause on scroll via Intersection Observer
+-  Like button with live counter and red toggle state
+-  Responsive navigation — left sidebar on desktop, bottom bar on mobile
+-  Glassmorphism UI with gradient overlays
 
 ## Getting Started
 
@@ -56,11 +56,11 @@ The core logic lives in `hooks/useVideoAutoPlay.ts`.
 ┌────────────────────────────────────────────────┐
 │           IntersectionObserver                 │
 │                                                │
-│  threshold: 0.6  (≥ 60% of card is visible)  │
+│  threshold: 0.6  (≥ 60% of card is visible)    │
 │                                                │
-│  isIntersecting = true  →  video.play()       │
-│  isIntersecting = false →  video.pause()      │
-│                             video.currentTime = 0 │
+│  isIntersecting = true  →  video.play()        │
+│  isIntersecting = false →  video.pause()       │
+│                          video.currentTime = 0 │
 └────────────────────────────────────────────────┘
 ```
 
